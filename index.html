@@ -14,8 +14,9 @@
         .container {
             margin-top: 50px;
         }
-        .htText {
+        .ht_master .htCore td {
             white-space: normal !important;
+            word-wrap: break-word;
         }
     </style>
 </head>
@@ -78,14 +79,10 @@
             rowHeaders: true,
             filters: true,
             dropdownMenu: true,
-            stretchH: 'all',
-            autoWrapRow: true,
+            manualColumnResize: true,
+            manualRowResize: true,
+            wordWrap: true,
             licenseKey: 'non-commercial-and-evaluation',
-            cells: function (row, col) {
-                const cellProperties = {};
-                cellProperties.className = 'htText';
-                return cellProperties;
-            }
         });
 
         const voucherAuditTable = new Handsontable(document.getElementById('voucherAuditTable'), {
@@ -94,14 +91,10 @@
             rowHeaders: true,
             filters: true,
             dropdownMenu: true,
-            stretchH: 'all',
-            autoWrapRow: true,
+            manualColumnResize: true,
+            manualRowResize: true,
+            wordWrap: true,
             licenseKey: 'non-commercial-and-evaluation',
-            cells: function (row, col) {
-                const cellProperties = {};
-                cellProperties.className = 'htText';
-                return cellProperties;
-            }
         });
 
         // Add Row to Table

@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@12.2.0/dist/handsontable.full.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body {
             background-color: #f8f9fa;
@@ -42,7 +43,7 @@
                 <button class="btn btn-primary me-2" onclick="addColumnToTable('budgetTable')">Add Column</button>
                 <button class="btn btn-danger me-2" onclick="deleteColumnFromTable('budgetTable')">Delete Column</button>
                 <button class="btn btn-success me-2" onclick="exportTableToExcel('budgetTable', 'budget.xlsx')">Export to Excel</button>
-                <input type="file" class="form-control mt-3" id="importBudgetFile" onchange="importExcelFile('budgetTable', this)">
+                <input type="file" id="budgetFileInput" class="form-control mt-2" accept=".xlsx, .xls" onchange="importExcelToTable('budgetFileInput', 'budgetTable')">
             </div>
 
             <div class="tab-pane fade" id="voucher-audit" role="tabpanel" aria-labelledby="voucher-audit-tab">
@@ -53,30 +54,15 @@
                 <button class="btn btn-primary me-2" onclick="addColumnToTable('voucherAuditTable')">Add Column</button>
                 <button class="btn btn-danger me-2" onclick="deleteColumnFromTable('voucherAuditTable')">Delete Column</button>
                 <button class="btn btn-success me-2" onclick="exportTableToExcel('voucherAuditTable', 'voucher_audit.xlsx')">Export to Excel</button>
-                <input type="file" class="form-control mt-3" id="importVoucherFile" onchange="importExcelFile('voucherAuditTable', this)">
+                <input type="file" id="voucherFileInput" class="form-control mt-2" accept=".xlsx, .xls" onchange="importExcelToTable('voucherFileInput', 'voucherAuditTable')">
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/handsontable@12.2.0/dist/handsontable.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
-        // Sample Data
-        const budgetData = [
-            ["Source", "Program", "Allocation", "Remarks"],
-            ["Source 1", "Program 1", "1000", "Remark 1"],
-            ["Source 2", "Program 2", "2000", "Remark 2"]
-        ];
-
-        const voucherAuditData = [
-            ["Voucher No", "Source", "Amount", "Remarks"],
-            ["V-001", "Source 1", "1000", "Remark 1"],
-            ["V-002", "Source 2", "2000", "Remark 2"]
-        ];
-
-        // Initialize Tables
         const budgetTable = new Handsontable(document.getElementById('budgetTable'), {
-            data: budgetData,
+            data: [],
             colHeaders: true,
             rowHeaders: true,
             filters: true,
@@ -88,7 +74,7 @@
         });
 
         const voucherAuditTable = new Handsontable(document.getElementById('voucherAuditTable'), {
-            data: voucherAuditData,
+            data: [],
             colHeaders: true,
             rowHeaders: true,
             filters: true,
@@ -147,22 +133,28 @@
             XLSX.writeFile(wb, filename);
         }
 
-        // Import Excel File and Populate Table
-        function importExcelFile(tableId, inputElement) {
-            const file = inputElement.files[0];
-            const reader = new FileReader();
+        // Import Excel File to Table
+        function importExcelToTable(fileInputId, tableId) {
+            const fileInput = document.getElementById(fileInputId);
+            const file = fileInput.files[0];
 
-            reader.onload = function (e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const importedData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            if (file) {
+                const reader = new FileReader();
 
-                const tableInstance = Handsontable.getInstance(document.getElementById(tableId));
-                tableInstance.loadData(importedData);
-            };
+                reader.onload = function (e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
 
-            reader.readAsArrayBuffer(file);
+                    const tableInstance = Handsontable.getInstance(document.getElementById(tableId));
+                    tableInstance.loadData(sheetData);
+                };
+
+                reader.readAsArrayBuffer(file);
+            } else {
+                alert('Please select a file to import.');
+            }
         }
     </script>
 

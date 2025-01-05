@@ -47,7 +47,7 @@
                 <button class="btn btn-primary me-2" onclick="addRowToTable('budgetTable')">Add Row</button>
                 <button class="btn btn-danger me-2" onclick="deleteRowFromTable('budgetTable')">Delete Row</button>
                 <button class="btn btn-primary me-2" onclick="addColumnToTable('budgetTable')">Add Column</button>
-                <button class="btn btn-success me-2" onclick="exportToExcel('budgetTable', 'budget.xlsx')">Export to Excel</button>
+                <button class="btn btn-success me-2" onclick="exportToExcelA4('budgetTable', 'budget.xlsx')">Export to Excel</button>
                 <button class="btn btn-danger me-2" onclick="exportToPDF('budgetTable', 'Budget Report')">Export to PDF</button>
                 <input type="file" id="importBudgetExcel" class="form-control w-auto d-inline" accept=".xls,.xlsx" onchange="importFromExcel('budgetTable', this)">
             </div>
@@ -59,7 +59,7 @@
                 <button class="btn btn-primary me-2" onclick="addRowToTable('voucherAuditTable')">Add Row</button>
                 <button class="btn btn-danger me-2" onclick="deleteRowFromTable('voucherAuditTable')">Delete Row</button>
                 <button class="btn btn-primary me-2" onclick="addColumnToTable('voucherAuditTable')">Add Column</button>
-                <button class="btn btn-success me-2" onclick="exportToExcel('voucherAuditTable', 'voucher_audit.xlsx')">Export to Excel</button>
+                <button class="btn btn-success me-2" onclick="exportToExcelA4('voucherAuditTable', 'voucher_audit.xlsx')">Export to Excel</button>
                 <button class="btn btn-danger me-2" onclick="exportToPDF('voucherAuditTable', 'Voucher Audit Report')">Export to PDF</button>
                 <input type="file" id="importVoucherAuditExcel" class="form-control w-auto d-inline" accept=".xls,.xlsx" onchange="importFromExcel('voucherAuditTable', this)">
             </div>
@@ -139,10 +139,15 @@
             table.updateSettings({ colHeaders: headers });
         }
 
-        function exportToExcel(tableId, fileName) {
+        function exportToExcelA4(tableId, fileName) {
             const table = tables[tableId];
             const data = table.getData();
             const ws = XLSX.utils.aoa_to_sheet(data);
+
+            // Wrap text style and adjust column width
+            ws['!cols'] = data[0].map(() => ({ width: 20 }));
+            ws['!rows'] = data.map(() => ({ hpt: 15 }));
+
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
             XLSX.writeFile(wb, fileName);
@@ -150,7 +155,7 @@
 
         function exportToPDF(tableId, title) {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            const doc = new jsPDF({ format: 'a4' });
             const table = tables[tableId];
             const data = table.getData();
             const headers = table.getColHeader();
@@ -159,6 +164,7 @@
             doc.autoTable({
                 head: [headers],
                 body: data,
+                styles: { cellWidth: 'wrap', fontSize: 8 },
             });
 
             doc.save(`${title}.pdf`);

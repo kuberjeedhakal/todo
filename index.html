@@ -61,8 +61,21 @@
 
     <script src="https://cdn.jsdelivr.net/npm/handsontable@12.2.0/dist/handsontable.full.min.js"></script>
     <script>
+        // Initial Data
+        const budgetData = [
+            ["Source", "Program", "Allocation", "Remarks"],
+            ["Source 1", "Program 1", "1000", "Remark 1"],
+            ["Source 2", "Program 2", "2000", "Remark 2"]
+        ];
+
+        const voucherAuditData = [
+            ["Voucher No", "Source", "Amount", "Remarks"],
+            ["V-001", "Source 1", "1000", "Remark 1"],
+            ["V-002", "Source 2", "2000", "Remark 2"]
+        ];
+
         const budgetTable = new Handsontable(document.getElementById('budgetTable'), {
-            data: [],
+            data: budgetData,
             colHeaders: true,
             rowHeaders: true,
             filters: true,
@@ -74,7 +87,7 @@
         });
 
         const voucherAuditTable = new Handsontable(document.getElementById('voucherAuditTable'), {
-            data: [],
+            data: voucherAuditData,
             colHeaders: true,
             rowHeaders: true,
             filters: true,

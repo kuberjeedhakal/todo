@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Report Software</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@12.2.0/dist/handsontable.full.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Audit Report Preparation</h1>
+
+        <ul class="nav nav-tabs mb-4" id="auditMenu" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="budget-tab" data-bs-toggle="tab" data-bs-target="#budget" type="button" role="tab" aria-controls="budget" aria-selected="true">Budget</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="voucher-audit-tab" data-bs-toggle="tab" data-bs-target="#voucher-audit" type="button" role="tab" aria-controls="voucher-audit" aria-selected="false">Voucher Audit</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="section-audit-tab" data-bs-toggle="tab" data-bs-target="#section-audit" type="button" role="tab" aria-controls="section-audit" aria-selected="false">Section Audit</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="program-audit-tab" data-bs-toggle="tab" data-bs-target="#program-audit" type="button" role="tab" aria-controls="program-audit" aria-selected="false">Program Audit</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reporting-tab" data-bs-toggle="tab" data-bs-target="#reporting" type="button" role="tab" aria-controls="reporting" aria-selected="false">Reporting</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="auditMenuContent">
+            <div class="tab-pane fade show active" id="budget" role="tabpanel" aria-labelledby="budget-tab">
+                <h3>Budget Section</h3>
+                <div id="budgetTable" class="mb-3"></div>
+                <button class="btn btn-success me-2" onclick="exportBudgetToExcel()">Export to Excel</button>
+                <button class="btn btn-danger me-2" onclick="exportBudgetToPDF()">Export to PDF</button>
+                <input type="file" id="importBudgetExcel" class="form-control w-auto d-inline" accept=".xls,.xlsx" onchange="importBudgetFromExcel(this)">
+            </div>
+            <div class="tab-pane fade" id="voucher-audit" role="tabpanel" aria-labelledby="voucher-audit-tab">
+                <h3>Voucher Audit</h3>
+                <div id="voucherAuditTable" class="mb-3"></div>
+                <button class="btn btn-success me-2" onclick="exportVoucherAuditToExcel()">Export to Excel</button>
+                <button class="btn btn-danger me-2" onclick="exportVoucherAuditToPDF()">Export to PDF</button>
+                <input type="file" id="importVoucherAuditExcel" class="form-control w-auto d-inline" accept=".xls,.xlsx" onchange="importVoucherAuditFromExcel(this)">
+            </div>
+            <div class="tab-pane fade" id="section-audit" role="tabpanel" aria-labelledby="section-audit-tab">
+                <h3>Section Audit</h3>
+                <div class="mb-3">
+                    <label for="sectionSelect" class="form-label">Select Section</label>
+                    <select id="sectionSelect" class="form-select" onchange="loadSectionData()">
+                        <option value="">-- Select Section --</option>
+                        <option value="Section 1">Section 1</option>
+                        <option value="Section 2">Section 2</option>
+                        <option value="Section 3">Section 3</option>
+                    </select>
+                </div>
+                <div id="sectionAuditTable" class="mb-3"></div>
+                <button class="btn btn-success me-2" onclick="exportSectionAuditToExcel()">Export to Excel</button>
+                <button class="btn btn-danger me-2" onclick="exportSectionAuditToPDF()">Export to PDF</button>
+            </div>
+            <div class="tab-pane fade" id="program-audit" role="tabpanel" aria-labelledby="program-audit-tab">
+                <h3>Program Audit</h3>
+                <div class="mb-3">
+                    <label for="programSelect" class="form-label">Select Program</label>
+                    <select id="programSelect" class="form-select" onchange="loadProgramData()">
+                        <option value="">-- Select Program --</option>
+                        <option value="कार्यक्रम 1">कार्यक्रम 1</option>
+                        <option value="कार्यक्रम 2">कार्यक्रम 2</option>
+                        <option value="कार्यक्रम 3">कार्यक्रम 3</option>
+                    </select>
+                </div>
+                <div id="programAuditTable" class="mb-3"></div>
+                <button class="btn btn-success me-2" onclick="exportProgramAuditToExcel()">Export to Excel</button>
+                <button class="btn btn-danger me-2" onclick="exportProgramAuditToPDF()">Export to PDF</button>
+            </div>
+            <div class="tab-pane fade" id="reporting" role="tabpanel" aria-labelledby="reporting-tab">
+                <h3>Reporting</h3>
+                <p>Details about reporting processes go here.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/handsontable@12.2.0/dist/handsontable.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        const budgetData = [
+            ["क्र.स.", "श्रोत", "कार्यक्रमको नाम", "विनियोजन रकम", "चुनौतीहरू", "कैफियत"],
+            ["1", "श्रोत 1", "कार्यक्रम 1", "1000", "चुनौती 1", "कैफियत 1"],
+            ["2", "श्रोत 2", "कार्यक्रम 2", "2000", "चुनौती 2", "कैफियत 2"]
+        ];
+
+        const voucherAuditData = [
+            ["क्र.स.", "भौचर नं", "श्रोत", "कार्यक्रमको नाम", "शाखा वा वडा", "बिल तथा भरपाईको जोड जम्मा", "कर गणना", "भएका कागजात सम्बन्धी कैफियत", "नभएका कागजातहरू", "कैफियत"],
+            ["1", "123", "श्रोत 1", "कार्यक्रम 1", "शाखा 1", "1000", "100", "कैफियत 1", "नभएका कागजात 1", "कैफियत 1"],
+            ["2", "124", "श्रोत 2", "कार्यक्रम 2", "शाखा 2", "2000", "200", "कैफियत 2", "नभएका कागजात 2", "कैफियत 2"]
+        ];
+
+        const budgetTableContainer = document.getElementById('budgetTable');
+        const voucherAuditTableContainer = document.getElementById('voucherAuditTable');
+
+        const budgetHot = new Handsontable(budgetTableContainer, {
+            data: budgetData,
+            colHeaders: true,
+            rowHeaders: true,
+            filters: true,
+            dropdownMenu: true,
+            licenseKey: 'non-commercial-and-evaluation',
+        });
+
+        const voucherAuditHot = new Handsontable(voucherAuditTableContainer, {
+            data: voucherAuditData,
+            colHeaders: true,
+            rowHeaders: true,
+            filters: true,
+            dropdownMenu: true,
+            licenseKey: 'non-commercial-and-evaluation',
+        });
+
+        function exportBudgetToExcel() {
+            const data = budgetHot.getData();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Budget");
+            XLSX.writeFile(wb, "budget.xlsx");
+        }
+
+        function exportVoucherAuditToExcel() {
+            const data = voucherAuditHot.getData();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Voucher Audit");
+            XLSX.writeFile(wb, "voucher_audit.xlsx");
+        }
+
+        function exportBudgetToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const data = budgetHot.getData();
+            const headers = data.shift();
+
+            doc.text("Budget Report", 10, 10);
+            doc.autoTable({
+                head: [headers],
+                body: data,
+            });
+
+            doc.save("budget.pdf");
+        }
+
+        function exportVoucherAuditToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const data = voucherAuditHot.getData();
+            const headers = data.shift();
+
+            doc.text("Voucher Audit Report", 10, 10);
+            doc.autoTable({
+                head: [headers],
+                body: data,
+            });
+
+            doc.save("voucher_audit.pdf");
+        }
+
+        function importBudgetFromExcel(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const importedData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                budgetHot.loadData(importedData);
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        function importVoucherAuditFromExcel(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const importedData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                voucherAuditHot.loadData(importedData);
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

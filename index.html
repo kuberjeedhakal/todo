@@ -7,13 +7,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@12.2.0/dist/handsontable.full.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body {
             background-color: #f8f9fa;
         }
         .container {
             margin-top: 50px;
+        }
+        .htText {
+            white-space: normal !important;
         }
     </style>
 </head>
@@ -28,163 +30,126 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="voucher-audit-tab" data-bs-toggle="tab" data-bs-target="#voucher-audit" type="button" role="tab" aria-controls="voucher-audit" aria-selected="false">Voucher Audit</button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="section-audit-tab" data-bs-toggle="tab" data-bs-target="#section-audit" type="button" role="tab" aria-controls="section-audit" aria-selected="false">Section Audit</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="program-audit-tab" data-bs-toggle="tab" data-bs-target="#program-audit" type="button" role="tab" aria-controls="program-audit" aria-selected="false">Program Audit</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="reporting-tab" data-bs-toggle="tab" data-bs-target="#reporting" type="button" role="tab" aria-controls="reporting" aria-selected="false">Reporting</button>
-            </li>
         </ul>
 
         <div class="tab-content" id="auditMenuContent">
-            <!-- Budget Section -->
             <div class="tab-pane fade show active" id="budget" role="tabpanel" aria-labelledby="budget-tab">
                 <h3>Budget Section</h3>
                 <div id="budgetTable" class="mb-3"></div>
                 <button class="btn btn-primary me-2" onclick="addRowToTable('budgetTable')">Add Row</button>
                 <button class="btn btn-danger me-2" onclick="deleteRowFromTable('budgetTable')">Delete Row</button>
                 <button class="btn btn-primary me-2" onclick="addColumnToTable('budgetTable')">Add Column</button>
-                <button class="btn btn-success me-2" onclick="exportToExcelA4('budgetTable', 'budget.xlsx')">Export to Excel</button>
-                <button class="btn btn-danger me-2" onclick="exportToPDF('budgetTable', 'Budget Report')">Export to PDF</button>
-                <input type="file" id="importBudgetExcel" class="form-control w-auto d-inline" accept=".xls,.xlsx" onchange="importFromExcel('budgetTable', this)">
+                <button class="btn btn-danger me-2" onclick="deleteColumnFromTable('budgetTable')">Delete Column</button>
+                <button class="btn btn-success me-2" onclick="exportTableToExcel('budgetTable', 'budget.xlsx')">Export to Excel</button>
             </div>
 
-            <!-- Voucher Audit Section -->
             <div class="tab-pane fade" id="voucher-audit" role="tabpanel" aria-labelledby="voucher-audit-tab">
                 <h3>Voucher Audit Section</h3>
                 <div id="voucherAuditTable" class="mb-3"></div>
                 <button class="btn btn-primary me-2" onclick="addRowToTable('voucherAuditTable')">Add Row</button>
                 <button class="btn btn-danger me-2" onclick="deleteRowFromTable('voucherAuditTable')">Delete Row</button>
                 <button class="btn btn-primary me-2" onclick="addColumnToTable('voucherAuditTable')">Add Column</button>
-                <button class="btn btn-success me-2" onclick="exportToExcelA4('voucherAuditTable', 'voucher_audit.xlsx')">Export to Excel</button>
-                <button class="btn btn-danger me-2" onclick="exportToPDF('voucherAuditTable', 'Voucher Audit Report')">Export to PDF</button>
-                <input type="file" id="importVoucherAuditExcel" class="form-control w-auto d-inline" accept=".xls,.xlsx" onchange="importFromExcel('voucherAuditTable', this)">
-            </div>
-
-            <!-- Section Audit Section -->
-            <div class="tab-pane fade" id="section-audit" role="tabpanel" aria-labelledby="section-audit-tab">
-                <h3>Section Audit</h3>
-                <p>Section-specific functionalities can be added here.</p>
-            </div>
-
-            <!-- Program Audit Section -->
-            <div class="tab-pane fade" id="program-audit" role="tabpanel" aria-labelledby="program-audit-tab">
-                <h3>Program Audit</h3>
-                <p>Program-specific functionalities can be added here.</p>
-            </div>
-
-            <!-- Reporting Section -->
-            <div class="tab-pane fade" id="reporting" role="tabpanel" aria-labelledby="reporting-tab">
-                <h3>Reporting</h3>
-                <p>Details about reporting processes go here.</p>
+                <button class="btn btn-danger me-2" onclick="deleteColumnFromTable('voucherAuditTable')">Delete Column</button>
+                <button class="btn btn-success me-2" onclick="exportTableToExcel('voucherAuditTable', 'voucher_audit.xlsx')">Export to Excel</button>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/handsontable@12.2.0/dist/handsontable.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
+        // Sample Data
         const budgetData = [
-            ["क्र.स.", "श्रोत", "कार्यक्रमको नाम", "विनियोजन रकम"],
-            ["1", "श्रोत 1", "कार्यक्रम 1", "1000"],
+            ["Source", "Program", "Allocation", "Remarks"],
+            ["Source 1", "Program 1", "1000", "Remark 1"],
+            ["Source 2", "Program 2", "2000", "Remark 2"]
         ];
 
         const voucherAuditData = [
-            ["क्र.स.", "भौचर नं", "श्रोत", "कार्यक्रमको नाम"],
-            ["1", "123", "श्रोत 1", "कार्यक्रम 1"],
+            ["Voucher No", "Source", "Amount", "Remarks"],
+            ["V-001", "Source 1", "1000", "Remark 1"],
+            ["V-002", "Source 2", "2000", "Remark 2"]
         ];
 
-        const tables = {
-            budgetTable: new Handsontable(document.getElementById('budgetTable'), {
-                data: budgetData,
-                colHeaders: true,
-                rowHeaders: true,
-                filters: true,
-                dropdownMenu: true,
-                licenseKey: 'non-commercial-and-evaluation',
-            }),
-            voucherAuditTable: new Handsontable(document.getElementById('voucherAuditTable'), {
-                data: voucherAuditData,
-                colHeaders: true,
-                rowHeaders: true,
-                filters: true,
-                dropdownMenu: true,
-                licenseKey: 'non-commercial-and-evaluation',
-            }),
-        };
+        // Initialize Tables
+        const budgetTable = new Handsontable(document.getElementById('budgetTable'), {
+            data: budgetData,
+            colHeaders: true,
+            rowHeaders: true,
+            filters: true,
+            dropdownMenu: true,
+            stretchH: 'all',
+            autoWrapRow: true,
+            licenseKey: 'non-commercial-and-evaluation',
+            cells: function (row, col) {
+                const cellProperties = {};
+                cellProperties.className = 'htText';
+                return cellProperties;
+            }
+        });
 
+        const voucherAuditTable = new Handsontable(document.getElementById('voucherAuditTable'), {
+            data: voucherAuditData,
+            colHeaders: true,
+            rowHeaders: true,
+            filters: true,
+            dropdownMenu: true,
+            stretchH: 'all',
+            autoWrapRow: true,
+            licenseKey: 'non-commercial-and-evaluation',
+            cells: function (row, col) {
+                const cellProperties = {};
+                cellProperties.className = 'htText';
+                return cellProperties;
+            }
+        });
+
+        // Add Row to Table
         function addRowToTable(tableId) {
-            const table = tables[tableId];
-            table.alter('insert_row', table.countRows());
+            const tableInstance = Handsontable.getInstance(document.getElementById(tableId));
+            tableInstance.alter('insert_row', tableInstance.countRows());
         }
 
+        // Delete Row from Table
         function deleteRowFromTable(tableId) {
-            const table = tables[tableId];
-            const selected = table.getSelected();
+            const tableInstance = Handsontable.getInstance(document.getElementById(tableId));
+            const selected = tableInstance.getSelected();
+
             if (selected) {
-                table.alter('remove_row', selected[0][0]);
+                const startRow = selected[0][0];
+                tableInstance.alter('remove_row', startRow);
             } else {
                 alert('Please select a row to delete.');
             }
         }
 
+        // Add Column to Table
         function addColumnToTable(tableId) {
-            const table = tables[tableId];
-            const colIndex = table.countCols();
-            table.alter('insert_col', colIndex);
-            const headers = table.getColHeader();
-            headers[colIndex] = `Column ${colIndex + 1}`;
-            table.updateSettings({ colHeaders: headers });
+            const tableInstance = Handsontable.getInstance(document.getElementById(tableId));
+            tableInstance.alter('insert_col', tableInstance.countCols());
         }
 
-        function exportToExcelA4(tableId, fileName) {
-            const table = tables[tableId];
-            const data = table.getData();
+        // Delete Column from Table
+        function deleteColumnFromTable(tableId) {
+            const tableInstance = Handsontable.getInstance(document.getElementById(tableId));
+            const selected = tableInstance.getSelected();
+
+            if (selected) {
+                const startCol = selected[0][1];
+                tableInstance.alter('remove_col', startCol);
+            } else {
+                alert('Please select a column to delete.');
+            }
+        }
+
+        // Export Table to Excel
+        function exportTableToExcel(tableId, filename) {
+            const tableInstance = Handsontable.getInstance(document.getElementById(tableId));
+            const data = tableInstance.getData();
             const ws = XLSX.utils.aoa_to_sheet(data);
-
-            // Wrap text style and adjust column width
-            ws['!cols'] = data[0].map(() => ({ width: 20 }));
-            ws['!rows'] = data.map(() => ({ hpt: 15 }));
-
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-            XLSX.writeFile(wb, fileName);
-        }
-
-        function exportToPDF(tableId, title) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ format: 'a4' });
-            const table = tables[tableId];
-            const data = table.getData();
-            const headers = table.getColHeader();
-
-            doc.text(title, 10, 10);
-            doc.autoTable({
-                head: [headers],
-                body: data,
-                styles: { cellWidth: 'wrap', fontSize: 8 },
-            });
-
-            doc.save(`${title}.pdf`);
-        }
-
-        function importFromExcel(tableId, input) {
-            const file = input.files[0];
-            const reader = new FileReader();
-
-            reader.onload = function (e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: "array" });
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                const importedData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-                tables[tableId].loadData(importedData);
-            };
-
-            reader.readAsArrayBuffer(file);
+            XLSX.writeFile(wb, filename);
         }
     </script>
 

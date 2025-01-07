@@ -3,174 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audit Report Software</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@12.2.0/dist/handsontable.full.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>Two-Way Conversation</title>
     <style>
         body {
-            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            margin: 20px;
         }
-        .container {
-            margin-top: 50px;
+        .conversation {
+            margin-bottom: 20px;
         }
-        .ht_master .htCore td {
-            white-space: normal !important;
-            word-wrap: break-word;
+        .text-box {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .text-box textarea {
+            flex: 1;
+            margin-right: 10px;
+            padding: 10px;
+            font-size: 14px;
+        }
+        .text-box button {
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="text-center mb-4">Audit Report Preparation</h1>
-
-        <ul class="nav nav-tabs mb-4" id="auditMenu" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="budget-tab" data-bs-toggle="tab" data-bs-target="#budget" type="button" role="tab" aria-controls="budget" aria-selected="true">Budget</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="voucher-audit-tab" data-bs-toggle="tab" data-bs-target="#voucher-audit" type="button" role="tab" aria-controls="voucher-audit" aria-selected="false">Voucher Audit</button>
-            </li>
-        </ul>
-
-        <div class="tab-content" id="auditMenuContent">
-            <div class="tab-pane fade show active" id="budget" role="tabpanel" aria-labelledby="budget-tab">
-                <h3>Budget Section</h3>
-                <div id="budgetTable" class="mb-3"></div>
-                <button class="btn btn-primary me-2" onclick="addRowToTable('budgetTable')">Add Row</button>
-                <button class="btn btn-danger me-2" onclick="deleteRowFromTable('budgetTable')">Delete Row</button>
-                <button class="btn btn-primary me-2" onclick="addColumnToTable('budgetTable')">Add Column</button>
-                <button class="btn btn-danger me-2" onclick="deleteColumnFromTable('budgetTable')">Delete Column</button>
-                <button class="btn btn-success me-2" onclick="exportTableToExcel('budgetTable', 'budget.xlsx')">Export to Excel</button>
-                <input type="file" id="budgetFileInput" class="form-control mt-2" accept=".xlsx, .xls" onchange="importExcelToTable('budgetFileInput', 'budgetTable')">
-            </div>
-
-            <div class="tab-pane fade" id="voucher-audit" role="tabpanel" aria-labelledby="voucher-audit-tab">
-                <h3>Voucher Audit Section</h3>
-                <div id="voucherAuditTable" class="mb-3"></div>
-                <button class="btn btn-primary me-2" onclick="addRowToTable('voucherAuditTable')">Add Row</button>
-                <button class="btn btn-danger me-2" onclick="deleteRowFromTable('voucherAuditTable')">Delete Row</button>
-                <button class="btn btn-primary me-2" onclick="addColumnToTable('voucherAuditTable')">Add Column</button>
-                <button class="btn btn-danger me-2" onclick="deleteColumnFromTable('voucherAuditTable')">Delete Column</button>
-                <button class="btn btn-success me-2" onclick="exportTableToExcel('voucherAuditTable', 'voucher_audit.xlsx')">Export to Excel</button>
-                <input type="file" id="voucherFileInput" class="form-control mt-2" accept=".xlsx, .xls" onchange="importExcelToTable('voucherFileInput', 'voucherAuditTable')">
-            </div>
-        </div>
+    <h1>Two-Way Conversation</h1>
+    <div id="conversation-container" class="conversation">
+        <!-- Dynamic conversation elements will appear here -->
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/handsontable@12.2.0/dist/handsontable.full.min.js"></script>
     <script>
-        // Initial Data
-        const budgetData = [
-            ["Source", "Program", "Allocation", "Remarks"],
-            ["Source 1", "Program 1", "1000", "Remark 1"],
-            ["Source 2", "Program 2", "2000", "Remark 2"]
-        ];
+        const container = document.getElementById('conversation-container');
 
-        const voucherAuditData = [
-            ["Voucher No", "Source", "Amount", "Remarks"],
-            ["V-001", "Source 1", "1000", "Remark 1"],
-            ["V-002", "Source 2", "2000", "Remark 2"]
-        ];
+        function createTextBox(isUser1) {
+            const div = document.createElement('div');
+            div.classList.add('text-box');
 
-        const budgetTable = new Handsontable(document.getElementById('budgetTable'), {
-            data: budgetData,
-            colHeaders: true,
-            rowHeaders: true,
-            filters: true,
-            dropdownMenu: true,
-            manualColumnResize: true,
-            manualRowResize: true,
-            wordWrap: true,
-            licenseKey: 'non-commercial-and-evaluation',
-        });
+            const textarea = document.createElement('textarea');
+            textarea.placeholder = isUser1 ? "User 1: Type your message here..." : "User 2: Type your reply here...";
 
-        const voucherAuditTable = new Handsontable(document.getElementById('voucherAuditTable'), {
-            data: voucherAuditData,
-            colHeaders: true,
-            rowHeaders: true,
-            filters: true,
-            dropdownMenu: true,
-            manualColumnResize: true,
-            manualRowResize: true,
-            wordWrap: true,
-            licenseKey: 'non-commercial-and-evaluation',
-        });
+            const button = document.createElement('button');
+            button.textContent = 'Send';
+            button.addEventListener('click', () => {
+                const message = textarea.value.trim();
+                if (message) {
+                    const p = document.createElement('p');
+                    p.textContent = isUser1 ? `User 1: ${message}` : `User 2: ${message}`;
+                    container.appendChild(p);
 
-        // Add Row to Table
-        function addRowToTable(tableId) {
-            const tableInstance = Handsontable.getInstance(document.getElementById(tableId));
-            tableInstance.alter('insert_row', tableInstance.countRows());
+                    // Create the next text box for the other user
+                    createTextBox(!isUser1);
+
+                    // Remove the current text box
+                    container.removeChild(div);
+                }
+            });
+
+            div.appendChild(textarea);
+            div.appendChild(button);
+            container.appendChild(div);
         }
 
-        // Delete Row from Table
-        function deleteRowFromTable(tableId) {
-            const tableInstance = Handsontable.getInstance(document.getElementById(tableId));
-            const selected = tableInstance.getSelected();
-
-            if (selected) {
-                const startRow = selected[0][0];
-                tableInstance.alter('remove_row', startRow);
-            } else {
-                alert('Please select a row to delete.');
-            }
-        }
-
-        // Add Column to Table
-        function addColumnToTable(tableId) {
-            const tableInstance = Handsontable.getInstance(document.getElementById(tableId));
-            tableInstance.alter('insert_col', tableInstance.countCols());
-        }
-
-        // Delete Column from Table
-        function deleteColumnFromTable(tableId) {
-            const tableInstance = Handsontable.getInstance(document.getElementById(tableId));
-            const selected = tableInstance.getSelected();
-
-            if (selected) {
-                const startCol = selected[0][1];
-                tableInstance.alter('remove_col', startCol);
-            } else {
-                alert('Please select a column to delete.');
-            }
-        }
-
-        // Export Table to Excel
-        function exportTableToExcel(tableId, filename) {
-            const tableInstance = Handsontable.getInstance(document.getElementById(tableId));
-            const data = tableInstance.getData();
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-            XLSX.writeFile(wb, filename);
-        }
-
-        // Import Excel File to Table
-        function importExcelToTable(fileInputId, tableId) {
-            const fileInput = document.getElementById(fileInputId);
-            const file = fileInput.files[0];
-
-            if (file) {
-                const reader = new FileReader();
-
-                reader.onload = function (e) {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-
-                    const tableInstance = Handsontable.getInstance(document.getElementById(tableId));
-                    tableInstance.loadData(sheetData);
-                };
-
-                reader.readAsArrayBuffer(file);
-            } else {
-                alert('Please select a file to import.');
-            }
-        }
+        // Start the conversation with User 1
+        createTextBox(true);
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
